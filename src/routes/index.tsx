@@ -302,13 +302,19 @@ function Index() {
                         className="flex w-full items-center justify-between gap-4 p-5 text-left"
                       >
                         <span className="min-w-0">
-                          <span className="block text-sm font-semibold capitalize text-foreground">
+                          <span className="flex items-center gap-2 text-sm font-semibold capitalize text-foreground">
                             {f.technique}
+                            {f.severity && (
+                              <span className="rounded-full border border-border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                                {f.severity}
+                              </span>
+                            )}
                           </span>
                           <span className="mt-1 block truncate text-sm italic text-muted-foreground">
                             “{f.quote}”
                           </span>
                         </span>
+
                         <span
                           className={`shrink-0 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`}
                         >
