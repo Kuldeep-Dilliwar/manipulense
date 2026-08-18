@@ -13,7 +13,9 @@ export type Finding = {
   technique: string;
   quote: string;
   explanation: string;
+  severity?: string | undefined;
 };
+
 
 export type AnalysisResult = {
   score: number;
