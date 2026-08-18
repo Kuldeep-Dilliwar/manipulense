@@ -52,7 +52,7 @@ export async function fetchUrlText(rawUrl: string) {
 const PROMPT = `You are a manipulation detection expert. Analyze this text and identify psychological manipulation techniques used. Return JSON with: score (0-100), and techniques array where each item has: name, quote (exact text from input), explanation, severity. Be accurate and strict in scoring.`;
 
 const GEMINI_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
 
 export async function analyzeContent(input: {
   text?: string | undefined;
