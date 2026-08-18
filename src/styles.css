@@ -182,3 +182,29 @@
   .tech-cherry { --tech: var(--cherry); }
   .tech-other { --tech: var(--other); }
 }
+
+/* Dark-theme tuning for technique colors + score glow */
+:root {
+  --fear: oklch(0.68 0.21 25);
+  --urgency: oklch(0.78 0.17 65);
+  --authority: oklch(0.68 0.15 265);
+  --bandwagon: oklch(0.75 0.15 165);
+  --gaslighting: oklch(0.7 0.19 320);
+  --cherry: oklch(0.74 0.13 210);
+  --other: oklch(0.7 0.02 260);
+}
+
+@layer components {
+  .mark-technique {
+    background-color: color-mix(in oklch, var(--tech) 26%, transparent);
+    box-shadow: inset 0 -0.35em 0 color-mix(in oklch, var(--tech) 16%, transparent);
+  }
+  .score-glow {
+    animation: score-pulse 2.4s ease-in-out infinite;
+  }
+}
+
+@keyframes score-pulse {
+  0%, 100% { filter: drop-shadow(0 0 12px color-mix(in oklch, var(--fear) 55%, transparent)); }
+  50% { filter: drop-shadow(0 0 34px color-mix(in oklch, var(--fear) 85%, transparent)); }
+}
