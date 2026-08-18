@@ -71,43 +71,51 @@ export async function analyzeContent(input: {
 
   const text = source.slice(0, 12000);
 
-  const res = await fetch(GEMINI_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
-    body: JSON.stringify({
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: `${PROMPT}\n\nTEXT:\n"""\n${text}\n"""` }],
-        },
-      ],
-      generationConfig: {
-        temperature: 0.2,
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: "OBJECT",
-          properties: {
-            score: { type: "NUMBER" },
-            summary: { type: "STRING" },
-            techniques: {
-              type: "ARRAY",
-              items: {
-                type: "OBJECT",
-                properties: {
-                  name: { type: "STRING" },
-                  quote: { type: "STRING" },
-                  explanation: { type: "STRING" },
-                  severity: { type: "STRING" },
-                },
-                required: ["name", "quote", "explanation", "severity"],
+  const body = JSON.stringify({
+    contents: [
+      {
+        role: "user",
+        parts: [{ text: `${PROMPT}\n\nTEXT:\n"""\n${text}\n"""` }],
+      },
+    ],
+    generationConfig: {
+      temperature: 0.2,
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: "OBJECT",
+        properties: {
+          score: { type: "NUMBER" },
+          summary: { type: "STRING" },
+          techniques: {
+            type: "ARRAY",
+            items: {
+              type: "OBJECT",
+              properties: {
+                name: { type: "STRING" },
+                quote: { type: "STRING" },
+                explanation: { type: "STRING" },
+                severity: { type: "STRING" },
               },
+              required: ["name", "quote", "explanation", "severity"],
             },
           },
-          required: ["score", "summary", "techniques"],
         },
+        required: ["score", "summary", "techniques"],
       },
-    }),
+    },
   });
+
+  let res!: Response;
+  for (let attempt = 0; attempt < 4; attempt++) {
+    res = await fetch(GEMINI_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+      body,
+    });
+    if (res.ok || (res.status !== 429 && res.status < 500)) break;
+    if (attempt < 3) await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
+  }
+
 
   if (!res.ok) {
     const detail = await res.text().catch(() => "");
