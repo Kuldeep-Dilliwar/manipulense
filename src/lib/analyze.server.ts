@@ -53,8 +53,10 @@ const PROMPT = `You are a manipulation detection expert. Analyze this text and i
 Use exactly one of these lowercase names for "name": fear mongering, false urgency, appeal to authority, bandwagon, gaslighting, cherry picking.
 "quote" must be copied character-for-character from the input text (under ~200 characters). "severity" is one of: low, medium, high. Also include a one-sentence "summary".`;
 
-const GEMINI_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
+/** Primary model first; fallbacks used when a model is unavailable/overloaded. */
+const GEMINI_MODELS = ["gemini-3.6-flash", "gemini-flash-latest", "gemini-flash-lite-latest"];
+const geminiUrl = (model: string) =>
+  `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 
 export async function analyzeContent(input: {
   text?: string | undefined;
