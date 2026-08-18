@@ -63,14 +63,14 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
+  --background: oklch(0.985 0.006 95);
+  --foreground: oklch(0.22 0.02 250);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
+  --card-foreground: oklch(0.22 0.02 250);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
+  --popover-foreground: oklch(0.22 0.02 250);
+  --primary: oklch(0.45 0.11 215);
+  --primary-foreground: oklch(0.985 0.006 95);
   --secondary: oklch(0.968 0.007 247.896);
   --secondary-foreground: oklch(0.208 0.042 265.755);
   --muted: oklch(0.968 0.007 247.896);
@@ -141,4 +141,43 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
   }
+}
+
+/* ManipuLens technique highlight tokens */
+:root {
+  --fear: oklch(0.62 0.2 25);
+  --urgency: oklch(0.68 0.18 55);
+  --authority: oklch(0.55 0.14 260);
+  --bandwagon: oklch(0.62 0.14 165);
+  --gaslighting: oklch(0.56 0.19 320);
+  --cherry: oklch(0.6 0.13 210);
+  --other: oklch(0.55 0.02 260);
+}
+
+@theme inline {
+  --color-fear: var(--fear);
+  --color-urgency: var(--urgency);
+  --color-authority: var(--authority);
+  --color-bandwagon: var(--bandwagon);
+  --color-gaslighting: var(--gaslighting);
+  --color-cherry: var(--cherry);
+  --color-other: var(--other);
+}
+
+@layer components {
+  .mark-technique {
+    border-radius: 0.25rem;
+    padding: 0.05em 0.2em;
+    background-color: color-mix(in oklch, var(--tech) 22%, transparent);
+    box-shadow: inset 0 -0.35em 0 color-mix(in oklch, var(--tech) 14%, transparent);
+    border-bottom: 2px solid var(--tech);
+    color: inherit;
+  }
+  .tech-fear { --tech: var(--fear); }
+  .tech-urgency { --tech: var(--urgency); }
+  .tech-authority { --tech: var(--authority); }
+  .tech-bandwagon { --tech: var(--bandwagon); }
+  .tech-gaslighting { --tech: var(--gaslighting); }
+  .tech-cherry { --tech: var(--cherry); }
+  .tech-other { --tech: var(--other); }
 }
