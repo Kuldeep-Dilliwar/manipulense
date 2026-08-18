@@ -108,14 +108,17 @@ export async function analyzeContent(input: {
   });
 
   let res!: Response;
-  for (let attempt = 0; attempt < 4; attempt++) {
-    res = await fetch(GEMINI_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
-      body,
-    });
-    if (res.ok || (res.status !== 429 && res.status < 500)) break;
-    if (attempt < 3) await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
+  outer: for (const model of GEMINI_MODELS) {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      res = await fetch(geminiUrl(model), {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+        body,
+      });
+      if (res.ok) break outer;
+      if (res.status !== 429 && res.status < 500) break outer; // terminal error
+      if (attempt < 2) await new Promise((r) => setTimeout(r, 1200 * (attempt + 1)));
+    }
   }
 
 
