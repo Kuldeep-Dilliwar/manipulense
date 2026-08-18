@@ -138,9 +138,12 @@ export async function analyzeContent(input: {
 
   const parsed = ResultSchema.parse(JSON.parse(match[0]));
 
+  // Some responses come back on a 0-1 scale; normalize to 0-100.
+  const rawScore = parsed.score > 0 && parsed.score <= 1 ? parsed.score * 100 : parsed.score;
+
   return {
     text,
-    score: Math.max(0, Math.min(100, Math.round(parsed.score))),
+    score: Math.max(0, Math.min(100, Math.round(rawScore))),
     summary: parsed.summary ?? "",
     findings: parsed.techniques
       .filter((t) => t.name && t.quote)
