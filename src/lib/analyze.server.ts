@@ -55,8 +55,8 @@ Return a manipulation score from 0 (neutral, factual) to 100 (extremely manipula
 If the text is clean, return an empty findings array and a low score.`;
 
 export async function analyzeContent(input: {
-  text?: string;
-  url?: string;
+  text?: string | undefined;
+  url?: string | undefined;
 }): Promise<AnalysisResult> {
   const apiKey = process.env["LOVABLE_API_KEY"];
   if (!apiKey) throw new Error("AI is not configured.");
