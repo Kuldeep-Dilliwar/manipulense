@@ -218,3 +218,31 @@
   0%, 100% { filter: drop-shadow(0 0 16px color-mix(in oklch, var(--fear) 60%, transparent)); }
   50% { filter: drop-shadow(0 0 42px color-mix(in oklch, var(--fear) 95%, transparent)); }
 }
+
+/* Hidden signature: only readable when selected */
+.hidden-sig {
+  color: transparent;
+}
+.hidden-sig::selection {
+  color: var(--foreground);
+  background: color-mix(in oklch, var(--primary) 45%, transparent);
+}
+
+@layer components {
+  .fox-pop {
+    animation: fox-pop 0.25s cubic-bezier(0.2, 1.4, 0.4, 1);
+  }
+  .fox-wiggle {
+    display: inline-block;
+    animation: fox-wiggle 1.6s ease-in-out infinite;
+  }
+}
+
+@keyframes fox-pop {
+  from { opacity: 0; transform: translateY(8px) scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes fox-wiggle {
+  0%, 100% { transform: rotate(-8deg) translateY(0); }
+  50% { transform: rotate(8deg) translateY(-2px); }
+}
