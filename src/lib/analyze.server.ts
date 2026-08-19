@@ -6,6 +6,11 @@ export const AnalyzeInputSchema = z.object({
   url: z.string().optional(),
 });
 
+export const InoculateInputSchema = z.object({
+  text: z.string().min(20),
+});
+
+
 const ResultSchema = z.object({
   score: z.number(),
   summary: z.string().optional(),
