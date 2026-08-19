@@ -160,3 +160,49 @@ export async function analyzeContent(input: {
       })),
   };
 }
+
+const INOCULATE_PROMPT = `Rewrite this text removing all psychological manipulation techniques while keeping core message and facts intact. Make it neutral, honest and direct. Return only the rewritten text, with no preamble or commentary.`;
+
+export async function inoculateContent(input: { text: string }): Promise<{ text: string }> {
+  const apiKey = process.env["GEMINI_API_KEY"];
+  if (!apiKey) throw new Error("Gemini API key is not configured.");
+
+  const source = input.text.trim().slice(0, 12000);
+  if (source.length < 20) throw new Error("Please provide at least a couple of sentences.");
+
+  const body = JSON.stringify({
+    contents: [
+      { role: "user", parts: [{ text: `${INOCULATE_PROMPT}\n\nTEXT:\n"""\n${source}\n"""` }] },
+    ],
+    generationConfig: { temperature: 0.3 },
+  });
+
+  let res!: Response;
+  outer: for (const model of GEMINI_MODELS) {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      res = await fetch(geminiUrl(model), {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+        body,
+      });
+      if (res.ok) break outer;
+      if (res.status !== 429 && res.status < 500) break outer;
+      if (attempt < 2) await new Promise((r) => setTimeout(r, 1200 * (attempt + 1)));
+    }
+  }
+
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    throw new Error(`Gemini request failed (${res.status}). ${detail.slice(0, 300)}`.trim());
+  }
+
+  const payload = (await res.json()) as {
+    candidates?: { content?: { parts?: { text?: string }[] } }[];
+  };
+  const out = (payload.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("") ?? "")
+    .trim()
+    .replace(/^"""|"""$/g, "")
+    .trim();
+  if (!out) throw new Error("Gemini returned no rewrite. Try again.");
+  return { text: out };
+}
