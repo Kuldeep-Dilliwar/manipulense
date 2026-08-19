@@ -173,7 +173,7 @@ function Index() {
           )}
 
           <div className="mt-4 flex flex-wrap items-center gap-3">
-            <Button onClick={submit} disabled={mutation.isPending}>
+            <Button onClick={submit} disabled={mutation.isPending || !canSubmit}>
               {mutation.isPending ? "Analyzing…" : "Analyze"}
             </Button>
             {mode === "text" && (
