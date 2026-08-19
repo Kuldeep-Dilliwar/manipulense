@@ -90,9 +90,12 @@ function Index() {
     [result],
   );
 
+  const canSubmit = mode === "text" ? text.trim().length >= 20 : url.trim().length > 3;
+
   function submit() {
-    if (mode === "text") mutation.mutate({ text });
-    else mutation.mutate({ url });
+    if (!canSubmit) return;
+    if (mode === "text") mutation.mutate({ text: text.trim() });
+    else mutation.mutate({ url: url.trim() });
   }
 
   async function share() {
