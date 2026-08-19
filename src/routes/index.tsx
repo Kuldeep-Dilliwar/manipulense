@@ -98,6 +98,15 @@ function Index() {
     else mutation.mutate({ url: url.trim() });
   }
 
+  function clear() {
+    setText("");
+    setUrl("");
+    setViewed(null);
+    setOpen(null);
+    setShareState("idle");
+    mutation.reset();
+  }
+
   async function share() {
     if (!shotRef.current) return;
     setShareState("working");
@@ -124,7 +133,7 @@ function Index() {
   }
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background bg-grid">
       <div className="mx-auto max-w-3xl px-5 py-14">
         <header className="mb-10">
           <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">
@@ -134,8 +143,7 @@ function Index() {
             See the persuasion behind the words.
           </h1>
           <p className="mt-4 max-w-xl text-muted-foreground">
-            Paste any text or drop in a link. ManipuLens highlights manipulation techniques
-            sentence by sentence and scores how hard it is pushing you.
+            Everything is trying to manipulate you. Now you can see it.
           </p>
         </header>
 
@@ -175,6 +183,9 @@ function Index() {
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <Button onClick={submit} disabled={mutation.isPending || !canSubmit}>
               {mutation.isPending ? "Analyzing…" : "Analyze"}
+            </Button>
+            <Button variant="outline" onClick={clear} disabled={mutation.isPending}>
+              Clear
             </Button>
             {mode === "text" && (
               <Button variant="ghost" onClick={() => setText(SAMPLE)} disabled={mutation.isPending}>
@@ -296,7 +307,7 @@ function Index() {
                   return (
                     <Card
                       key={i}
-                      className={`tech-${techniqueSlug(f.technique)} border-l-4 p-0`}
+                      className={`tech-${techniqueSlug(f.technique)} border-l-[5px] rounded-xl p-0 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg`}
                       style={{ borderLeftColor: "var(--tech)" }}
                     >
                       <button
@@ -355,14 +366,16 @@ function scoreTone(score: number) {
 
 function ScoreDial({ score }: { score: number }) {
   const tone = scoreTone(score);
-  const hot = score >= 70;
+  const hot = score > 80;
   return (
     <div className={`relative shrink-0 ${hot ? "score-glow" : ""}`}>
       <div
         className="grid h-44 w-44 place-items-center rounded-full transition-all"
         style={{
           background: `conic-gradient(${tone} ${score * 3.6}deg, color-mix(in oklch, var(--muted) 80%, transparent) 0deg)`,
-          boxShadow: hot ? `0 0 60px color-mix(in oklch, var(--fear) 45%, transparent)` : "none",
+          boxShadow: hot
+            ? `0 0 80px color-mix(in oklch, var(--fear) 55%, transparent), 0 0 30px color-mix(in oklch, var(--fear) 35%, transparent)`
+            : "none",
         }}
       >
         <div className="grid h-[9.5rem] w-[9.5rem] place-items-center rounded-full bg-card">
