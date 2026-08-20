@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { Eye } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -136,68 +137,82 @@ function Index() {
     <main className="min-h-screen bg-background bg-grid">
       <div className="mx-auto max-w-3xl px-5 py-14">
         <header className="mb-10">
-          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">
-            ManipuLens
+          <div className="flex items-center gap-2">
+            <span className="text-2xl font-extrabold uppercase tracking-[0.12em]">
+              <span className="text-foreground">MANIPU</span>
+              <span className="logo-glow">LENS</span>
+            </span>
+            <Eye className="logo-glow h-6 w-6" strokeWidth={2.5} />
+          </div>
+          <div className="logo-line mt-3" />
+          <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-muted-foreground">
+            Rhetorical Forensics Engine
           </p>
-          <h1 className="mt-3 text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
-            See the persuasion behind the words.
+          <h1 className="mt-8 text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
+            See the <span className="persuasion-glow">persuasion</span> behind the words.
           </h1>
           <p className="mt-4 max-w-xl text-muted-foreground">
             Everything is trying to manipulate you. Now you can see it.
           </p>
         </header>
 
-        <Card className="p-5">
-          <div className="mb-4 inline-flex rounded-lg bg-muted p-1">
-            {(["text", "url"] as const).map((m) => (
-              <button
-                key={m}
-                onClick={() => setMode(m)}
-                className={`rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
-                  mode === m
-                    ? "bg-card text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {m === "text" ? "Paste text" : "Enter URL"}
-              </button>
-            ))}
-          </div>
+        <div className="gradient-border">
+          <Card className="border-0 bg-card p-5">
+            <div className="mb-4 inline-flex rounded-lg bg-muted p-1">
+              {(["text", "url"] as const).map((m) => (
+                <button
+                  key={m}
+                  onClick={() => setMode(m)}
+                  className={`rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
+                    mode === m
+                      ? "bg-card text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {m === "text" ? "Paste text" : "Enter URL"}
+                </button>
+              ))}
+            </div>
 
-          {mode === "text" ? (
-            <Textarea
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              rows={8}
-              placeholder="Paste an article, email, ad or message…"
-              className="resize-y"
-            />
-          ) : (
-            <Input
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://example.com/article"
-            />
-          )}
-
-          <div className="mt-4 flex flex-wrap items-center gap-3">
-            <Button onClick={submit} disabled={mutation.isPending || !canSubmit}>
-              {mutation.isPending ? "Analyzing…" : "Analyze"}
-            </Button>
-            <Button variant="outline" onClick={clear} disabled={mutation.isPending}>
-              Clear
-            </Button>
-            {mode === "text" && (
-              <Button variant="ghost" onClick={() => setText(SAMPLE)} disabled={mutation.isPending}>
-                Try a sample
-              </Button>
+            {mode === "text" ? (
+              <Textarea
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                rows={8}
+                placeholder="Paste an article, email, ad or message…"
+                className="resize-y"
+              />
+            ) : (
+              <Input
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="https://example.com/article"
+              />
             )}
-          </div>
 
-          {mutation.isError && (
-            <p className="mt-4 text-sm text-destructive">{mutation.error.message}</p>
-          )}
-        </Card>
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <Button
+                onClick={submit}
+                disabled={mutation.isPending || !canSubmit}
+                className="analyze-glow"
+              >
+                {mutation.isPending ? "Analyzing…" : "Analyze"}
+              </Button>
+              <Button variant="outline" onClick={clear} disabled={mutation.isPending}>
+                Clear
+              </Button>
+              {mode === "text" && (
+                <Button variant="ghost" onClick={() => setText(SAMPLE)} disabled={mutation.isPending}>
+                  Try a sample
+                </Button>
+              )}
+            </div>
+
+            {mutation.isError && (
+              <p className="mt-4 text-sm text-destructive">{mutation.error.message}</p>
+            )}
+          </Card>
+        </div>
 
         {history.length > 0 && (
           <section className="mt-8">
