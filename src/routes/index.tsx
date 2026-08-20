@@ -1,9 +1,17 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { analyzeManipulation } from "@/lib/analyze.functions";
+import { analyzeManipulation, inoculateManipulation } from "@/lib/analyze.functions";
 import { TECHNIQUES, segmentText, techniqueSlug, type AnalysisResult } from "@/lib/analysis";
+import {
+  encodeReport,
+  loadHistory,
+  randomId,
+  saveHistory,
+  type HistoryItem,
+} from "@/lib/history";
+import { FoxSignature } from "@/components/FoxSignature";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,19 +42,6 @@ export const Route = createFileRoute("/")({
 
 const SAMPLE = `Time is running out — only 3 spots left before midnight, and once they're gone, you'll be left behind while everyone else moves forward. Leading experts agree this is the single most important decision you'll make this year. Thousands of people just like you have already joined. If you feel hesitant, that's just your fear talking; you've always been the type to overthink things that are perfectly obvious. Every single customer who joined last month reported better results.`;
 
-const HISTORY_KEY = "manipulens.history.v1";
-
-type HistoryItem = { id: string; at: number; result: AnalysisResult };
-
-function loadHistory(): HistoryItem[] {
-  try {
-    const raw = localStorage.getItem(HISTORY_KEY);
-    return raw ? (JSON.parse(raw) as HistoryItem[]) : [];
-  } catch {
-    return [];
-  }
-}
-
 function Index() {
   const [mode, setMode] = useState<"text" | "url">("text");
   const [text, setText] = useState("");
@@ -54,9 +49,12 @@ function Index() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [viewed, setViewed] = useState<AnalysisResult | null>(null);
   const [shareState, setShareState] = useState<"idle" | "working" | "copied" | "saved">("idle");
+  const [linkState, setLinkState] = useState<"idle" | "copied">("idle");
+  const [inoculated, setInoculated] = useState<string | null>(null);
   const [open, setOpen] = useState<number | null>(null);
   const shotRef = useRef<HTMLDivElement>(null);
   const analyze = useServerFn(analyzeManipulation);
+  const inoculate = useServerFn(inoculateManipulation);
 
   useEffect(() => setHistory(loadHistory()), []);
 
@@ -65,19 +63,28 @@ function Index() {
     onSuccess: (data) => {
       setViewed(data);
       setOpen(null);
+      setInoculated(null);
+      setLinkState("idle");
       setHistory((prev) => {
         const next = [
-          { id: `${Date.now()}`, at: Date.now(), result: data },
+          {
+            id: randomId(),
+            at: Date.now(),
+            kind: mode,
+            source: mode === "url" ? url.trim() : undefined,
+            result: data,
+          } satisfies HistoryItem,
           ...prev.filter((h) => h.result.text !== data.text),
-        ].slice(0, 5);
-        try {
-          localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
-        } catch {
-          /* storage unavailable */
-        }
+        ].slice(0, 50);
+        saveHistory(next);
         return next;
       });
     },
+  });
+
+  const inoculation = useMutation<{ text: string }, Error, string>({
+    mutationFn: async (t) => (await inoculate({ data: { text: t } })) as { text: string },
+    onSuccess: (d) => setInoculated(d.text),
   });
 
   const result = viewed;
@@ -104,8 +111,29 @@ function Index() {
     setUrl("");
     setViewed(null);
     setOpen(null);
+    setInoculated(null);
     setShareState("idle");
+    setLinkState("idle");
+    inoculation.reset();
     mutation.reset();
+  }
+
+  async function copyLink() {
+    if (!result) return;
+    const id = randomId();
+    const link = `${window.location.origin}/r/${id}#${encodeReport(result)}`;
+    try {
+      localStorage.setItem(`manipulens.report.${id}`, JSON.stringify(result));
+    } catch {
+      /* ignore */
+    }
+    try {
+      await navigator.clipboard.writeText(link);
+    } catch {
+      window.prompt("Copy this report link:", link);
+    }
+    setLinkState("copied");
+    setTimeout(() => setLinkState("idle"), 2500);
   }
 
   async function share() {
@@ -135,6 +163,7 @@ function Index() {
 
   return (
     <main className="min-h-screen bg-background bg-grid">
+      <FoxSignature />
       <div className="mx-auto max-w-3xl px-5 py-14">
         <header className="mb-10">
           <div className="flex items-center gap-2">
@@ -145,13 +174,13 @@ function Index() {
             <Eye className="logo-glow h-6 w-6" strokeWidth={2.5} />
           </div>
           <div className="logo-line mt-3" />
-          <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-muted-foreground">
+          <p className="mt-2 text-xs font-semibold uppercase tracking-[0.25em] text-foreground/75">
             Rhetorical Forensics Engine
           </p>
           <h1 className="mt-8 text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
             See the <span className="persuasion-glow">persuasion</span> behind the words.
           </h1>
-          <p className="mt-4 max-w-xl text-muted-foreground">
+          <p className="mt-4 max-w-xl text-foreground/80">
             Everything is trying to manipulate you. Now you can see it.
           </p>
         </header>
@@ -220,12 +249,13 @@ function Index() {
               Recent analyses
             </h2>
             <div className="grid gap-2">
-              {history.map((h) => (
+              {history.slice(0, 5).map((h) => (
                 <button
                   key={h.id}
                   onClick={() => {
                     setViewed(h.result);
                     setOpen(null);
+                    setInoculated(null);
                   }}
                   className={`flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 text-left transition-colors hover:bg-accent ${
                     result?.text === h.result.text ? "ring-1 ring-primary" : ""
@@ -257,7 +287,7 @@ function Index() {
 
         {result && (
           <section className="mt-10 space-y-8">
-            <div ref={shotRef} className="space-y-8 rounded-xl bg-background">
+            <div ref={shotRef} className="relative space-y-8 rounded-xl bg-background p-1">
               <Card className="p-8">
                 <div className="flex flex-col items-center gap-6 text-center sm:flex-row sm:text-left">
                   <ScoreDial score={result.score} />
@@ -297,6 +327,10 @@ function Index() {
                   )}
                 </p>
               </Card>
+
+              <div className="pointer-events-none absolute bottom-2 right-3 text-lg opacity-70">
+                🦊
+              </div>
             </div>
 
             <div className="flex flex-wrap gap-3">
@@ -309,7 +343,43 @@ function Index() {
                       ? "Image downloaded"
                       : "Share as image"}
               </Button>
+              <Button variant="secondary" onClick={copyLink}>
+                {linkState === "copied" ? "Link copied!" : "Copy link"}
+              </Button>
+              <Button
+                onClick={() => inoculation.mutate(result.text)}
+                disabled={inoculation.isPending}
+              >
+                {inoculation.isPending ? "Purifying…" : "Inoculate this text"}
+              </Button>
             </div>
+
+            {inoculation.isError && (
+              <p className="text-sm text-destructive">{inoculation.error.message}</p>
+            )}
+
+            {inoculated && (
+              <div className="grid gap-4 md:grid-cols-2">
+                <Card className="p-5">
+                  <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                    Original
+                  </h3>
+                  <p className="whitespace-pre-wrap text-sm leading-7 text-foreground">
+                    {result.text}
+                  </p>
+                </Card>
+                <Card className="p-5">
+                  <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-primary">
+                    Inoculated
+                  </h3>
+                  <p className="whitespace-pre-wrap text-sm leading-7 text-foreground">
+                    {inoculated}
+                    {"\n\n"}
+                    <span className="hidden-sig">Purified by 🦊</span>
+                  </p>
+                </Card>
+              </div>
+            )}
 
             <div>
               <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
@@ -370,6 +440,19 @@ function Index() {
             </div>
           </section>
         )}
+
+        <footer className="mt-16 flex items-center justify-between gap-4 border-t border-border pt-6 text-sm text-foreground/70">
+          <span>ManipuLens · Rhetorical Forensics Engine</span>
+          <span className="group inline-flex items-center gap-2">
+            <span className="text-lg">🦊</span>
+            <Link
+              to="/dashboard"
+              className="text-sm text-primary opacity-0 transition-opacity duration-200 group-hover:opacity-100 focus:opacity-100"
+            >
+              Dashboard
+            </Link>
+          </span>
+        </footer>
       </div>
     </main>
   );
