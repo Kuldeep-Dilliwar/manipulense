@@ -246,3 +246,65 @@
   0%, 100% { transform: rotate(-8deg) translateY(0); }
   50% { transform: rotate(8deg) translateY(-2px); }
 }
+
+/* Branding: logo, headline, input card, analyze button */
+:root {
+  --persuasion: oklch(0.62 0.22 35);
+  --logo-glow: oklch(0.76 0.16 195);
+}
+
+.logo-glow {
+  color: var(--logo-glow);
+  text-shadow:
+    0 0 18px color-mix(in oklch, var(--logo-glow) 55%, transparent),
+    0 0 6px color-mix(in oklch, var(--logo-glow) 35%, transparent);
+}
+
+.logo-line {
+  width: 3rem;
+  height: 1px;
+  background: var(--primary);
+  box-shadow: 0 0 12px color-mix(in oklch, var(--primary) 70%, transparent);
+}
+
+.persuasion-glow {
+  color: var(--persuasion);
+  text-shadow:
+    0 0 20px color-mix(in oklch, var(--persuasion) 55%, transparent),
+    0 0 8px color-mix(in oklch, var(--persuasion) 30%, transparent);
+}
+
+.gradient-border {
+  position: relative;
+  border-radius: var(--radius-xl);
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--primary) 60%, transparent),
+    color-mix(in oklch, oklch(0.4 0.18 300) 50%, transparent),
+    color-mix(in oklch, var(--primary) 60%, transparent)
+  );
+  background-size: 300% 300%;
+  animation: gradient-move 10s linear infinite;
+}
+
+@keyframes gradient-move {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.analyze-glow {
+  transition: box-shadow 0.3s ease;
+}
+.analyze-glow:hover:not(:disabled) {
+  box-shadow:
+    0 0 24px color-mix(in oklch, var(--primary) 55%, transparent),
+    0 0 8px color-mix(in oklch, var(--primary) 35%, transparent);
+  animation: analyze-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes analyze-pulse {
+  0%, 100% { box-shadow: 0 0 24px color-mix(in oklch, var(--primary) 45%, transparent); }
+  50% { box-shadow: 0 0 40px color-mix(in oklch, var(--primary) 75%, transparent); }
+}
