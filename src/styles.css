@@ -277,18 +277,18 @@
 .gradient-border {
   position: relative;
   border-radius: var(--radius-xl);
-  padding: 2px;
+  padding: 3px;
   background: linear-gradient(
     135deg,
-    color-mix(in oklch, oklch(0.78 0.18 205) 92%, transparent),
-    color-mix(in oklch, oklch(0.65 0.24 300) 88%, transparent),
-    color-mix(in oklch, oklch(0.78 0.18 205) 92%, transparent)
+    oklch(0.86 0.16 200),
+    oklch(0.75 0.22 300),
+    oklch(0.86 0.16 200)
   );
   background-size: 300% 300%;
   animation: gradient-move 10s linear infinite;
   box-shadow:
-    0 0 28px color-mix(in oklch, oklch(0.65 0.24 300) 28%, transparent),
-    0 0 10px color-mix(in oklch, oklch(0.78 0.18 205) 18%, transparent);
+    0 0 40px color-mix(in oklch, oklch(0.75 0.22 300) 40%, transparent),
+    0 0 16px color-mix(in oklch, oklch(0.86 0.16 200) 32%, transparent);
 }
 
 @keyframes gradient-move {
