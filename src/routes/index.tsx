@@ -248,7 +248,7 @@ function Index() {
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
               Recent analyses
             </h2>
-            <div className="grid gap-2">
+            <div className="grid gap-2 rounded-xl border border-border bg-card/40 p-3 backdrop-blur-sm">
               {history.slice(0, 5).map((h) => (
                 <button
                   key={h.id}
