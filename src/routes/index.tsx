@@ -71,7 +71,7 @@ function Index() {
             id: randomId(),
             at: Date.now(),
             kind: mode,
-            source: mode === "url" ? url.trim() : undefined,
+            ...(mode === "url" ? { source: url.trim() } : {}),
             result: data,
           } satisfies HistoryItem,
           ...prev.filter((h) => h.result.text !== data.text),
