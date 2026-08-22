@@ -67,7 +67,7 @@ export async function analyzeContent(input: {
   text?: string | undefined;
   url?: string | undefined;
 }): Promise<AnalysisResult> {
-  const apiKey = process.env["GEMINI_API_KEY"];
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   if (!apiKey) throw new Error("Gemini API key is not configured.");
 
   const source = input.url?.trim()
@@ -164,7 +164,7 @@ export async function analyzeContent(input: {
 const INOCULATE_PROMPT = `Rewrite this text removing all psychological manipulation techniques while keeping core message and facts intact. Make it neutral, honest and direct. Return only the rewritten text, with no preamble or commentary.`;
 
 export async function inoculateContent(input: { text: string }): Promise<{ text: string }> {
-  const apiKey = process.env["GEMINI_API_KEY"];
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   if (!apiKey) throw new Error("Gemini API key is not configured.");
 
   const source = input.text.trim().slice(0, 12000);
